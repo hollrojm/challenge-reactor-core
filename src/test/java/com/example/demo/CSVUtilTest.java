@@ -62,7 +62,25 @@ public class CSVUtilTest {
 
         assert listFilter.block().size() == 322;
     }
-
+    @Test
+    void reactive_filtrarJugadoresMayoresA34(){
+        List<Player> list = CsvUtilFile.getPlayers();
+        Flux<Player> listFlux = Flux.fromStream(list.parallelStream()).cache();
+        Mono<Map<String, Collection<Player>>> listFilter = listFlux
+                .filter(player -> player.age >= 34)
+                .filter(player -> player.club.equals("Arsenal"))
+                .distinct()
+                .collectMultimap(Player::getClub);
+        System.out.println(listFilter.block().size());
+        listFilter.block().forEach((club, players)->{
+            System.out.println(club);
+            players.forEach(player -> {
+                System.out.println(player.name +" "+ player.age);
+                assert player.club.equals("Arsenal");
+            });
+        });
+        assert listFilter.block().size() == 1;
+    }
 
 
 }
